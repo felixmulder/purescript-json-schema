@@ -14,3 +14,11 @@ type User =
 jsonSchema (definition :: Definition User)
 -- {"type":"object","required":["age","name"],"properties":{"age":{"type":"integer"},"name":{"type":"string"}}}
 ```
+
+Roadmap
+=======
+- [x] Figure out good enough encoding for JSON Schema
+- [x] Encode inline definitions (i.e. no `$ref`s)
+- [ ] Figure out type-level way to encode `$ref` (probably split `WriteForeign` into two typeclasses)
+- [ ] Introduce way to write a collection of schemas to string
+- [ ] Start looking at encoding paths (e.g. `POST /user`)
