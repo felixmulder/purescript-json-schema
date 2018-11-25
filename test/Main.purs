@@ -29,14 +29,17 @@ import Data.JSON.Schema (class WriteDefinition, Definition(..), Object(..), Prop
 main :: Effect Unit
 main = run [consoleReporter] do
   describe "purescript-json-schema" do
-    it "create correct fields for { name :: String, age :: Age }" do
+    it "generate for { name :: String, age :: Age }" do
       (definition :: Definition { name :: String, age :: Age }) `shouldEqual` nameAgeDef
 
-    it "create correct fields for { name :: String, age :: Maybe Age }" do
+    it "generate for { name :: String, age :: Maybe Age }" do
       (definition :: Definition { name :: String, age :: Maybe Age }) `shouldEqual` nameMaybeAgeDef
 
-    it "create correct fields for { name :: String, age :: Maybe Age, parents :: Array Parent }" do
+    it "generate for { name :: String, age :: Maybe Age, parents :: Array Parent }" do
       (definition :: Definition User) `shouldEqual` nameMaybeAgeParents
+
+    it "generate for { ages :: Maybe (Array Age) }" do
+      (definition :: Definition { ages :: Maybe (Array Age) }) `shouldEqual` maybeAges
 
 type User =
   { name :: String
@@ -69,3 +72,6 @@ nameMaybeAgeParents = Definition $ Object $ Properties [ ageDef, nameDef, parent
     nameDef = Property true "name" (String None)
     ageDef = Property false "age" Int
     parentsDef = Property true "parents" (Array $ String None)
+
+maybeAges :: Definition { ages :: Maybe (Array Age) }
+maybeAges = Definition $ Object $ Properties [ Property false "ages" (Array Int) ]

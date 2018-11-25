@@ -40,8 +40,8 @@ instance showDefinition :: Show (Definition a) where
 
 derive newtype instance eqDefinition :: Eq (Definition a)
 
-unDef :: forall a. Definition a -> Schema
-unDef (Definition s) = s
+undef :: forall a. Definition a -> Schema
+undef (Definition s) = s
 
 -- | The different schema definitions, strings, arrays, objects and so on
 data Schema
@@ -147,6 +147,11 @@ instance intWriteDefinition :: WriteDefinition Int where
 instance numberWriteDefinition :: WriteDefinition Number where
   definition = Definition Number
 
+instance arrayWriteDefinition :: WriteDefinition a => WriteDefinition (Array a) where
+  definition = Definition $ Array schemaA
+    where
+      schemaA = undef $ definition :: Definition a
+
 instance recordWriteForeign ::
   ( RowToList fields fieldList
   , WriteDefinitionFields fieldList
@@ -164,18 +169,7 @@ instance writeDefinitionFieldsMaybeCons ::
   , WriteDefinitionFields tail
   , Row.Cons name (Maybe head) whatever row
   ) => WriteDefinitionFields (Cons name (Maybe head) tail) where
-  toArray _ = [Property false (reflectSymbol nameP) $ unDef (definition :: Definition head)] <> toArray rest
-    where
-      nameP = SProxy :: SProxy name
-      rest = RLProxy :: RLProxy tail
-
-else instance writeDefinitionFieldsArrayCons ::
-  ( IsSymbol name
-  , WriteDefinition head
-  , WriteDefinitionFields tail
-  , Row.Cons name (Array head) whatever row
-  ) => WriteDefinitionFields (Cons name (Array head) tail) where
-  toArray _ = [Property true (reflectSymbol nameP) $ Array $ unDef (definition :: Definition head)] <> toArray rest
+  toArray _ = [Property false (reflectSymbol nameP) $ undef (definition :: Definition head)] <> toArray rest
     where
       nameP = SProxy :: SProxy name
       rest = RLProxy :: RLProxy tail
@@ -186,7 +180,7 @@ else instance writeDefinitionFieldsCons ::
   , WriteDefinitionFields tail
   , Row.Cons name head whatever row
   ) => WriteDefinitionFields (Cons name head tail) where
-  toArray _ = [Property true (reflectSymbol nameP) $ unDef (definition :: Definition head)] <> toArray rest
+  toArray _ = [Property true (reflectSymbol nameP) $ undef (definition :: Definition head)] <> toArray rest
     where
       nameP = SProxy :: SProxy name
       rest = RLProxy :: RLProxy tail
