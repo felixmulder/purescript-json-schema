@@ -7,6 +7,7 @@ import Test.Spec (pending, describe, it)
 import Test.Spec.Assertions (shouldEqual)
 import Test.Spec.Reporter.Console (consoleReporter)
 import Test.Spec.Runner (run)
+import Data.Maybe (Maybe)
 import Data.JSON.Schema (class WriteDefinition, Definition(..), Object(..), Property(..), Schema(..), StringFormat(..), definition)
 
 -- | This test aims to implement support for the following definition:
@@ -31,7 +32,10 @@ main = run [consoleReporter] do
     it "create correct fields for { name :: String, age :: Age }" do
       (definition :: Definition { name :: String, age :: Age }) `shouldEqual` nameAgeDef
 
-    pending "create correct fields for { name :: String, age :: Age, parents :: Array Parent }"
+    pending "create correct fields for { name :: String, age :: Maybe Age }" -- do
+      --(definition :: Definition { name :: String, age :: Maybe Age }) `shouldEqual` nameMaybeAgeDef
+
+    pending "create correct fields for { name :: String, age :: Maybe Age, parents :: Array Parent }"
 
 type User =
   { name :: String
@@ -48,3 +52,9 @@ nameAgeDef = Definition $ Object $ Properties [ ageDef, nameDef ]
   where
     nameDef = Property true "name" (String None)
     ageDef = Property true "age" Int
+
+nameMaybeAgeDef :: Definition { name :: String, age :: Maybe Age }
+nameMaybeAgeDef = Definition $ Object $ Properties [ ageDef, nameDef ]
+  where
+    nameDef = Property true "name" (String None)
+    ageDef = Property false "age" Int
