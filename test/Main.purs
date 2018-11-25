@@ -3,7 +3,7 @@ module Test.Main where
 import Prelude (Unit, discard, ($))
 
 import Effect (Effect)
-import Test.Spec (pending, describe, it)
+import Test.Spec (describe, it)
 import Test.Spec.Assertions (shouldEqual)
 import Test.Spec.Reporter.Console (consoleReporter)
 import Test.Spec.Runner (run)
@@ -32,15 +32,19 @@ main = run [consoleReporter] do
     it "create correct fields for { name :: String, age :: Age }" do
       (definition :: Definition { name :: String, age :: Age }) `shouldEqual` nameAgeDef
 
-    pending "create correct fields for { name :: String, age :: Maybe Age }" -- do
-      --(definition :: Definition { name :: String, age :: Maybe Age }) `shouldEqual` nameMaybeAgeDef
+    it "create correct fields for { name :: String, age :: Maybe Age }" do
+      (definition :: Definition { name :: String, age :: Maybe Age }) `shouldEqual` nameMaybeAgeDef
 
-    pending "create correct fields for { name :: String, age :: Maybe Age, parents :: Array Parent }"
+    it "create correct fields for { name :: String, age :: Maybe Age, parents :: Array Parent }" do
+      (definition :: Definition User) `shouldEqual` nameMaybeAgeParents
 
 type User =
   { name :: String
-  , age :: Age
+  , age :: Maybe Age
+  , parents :: Array Parent
   }
+
+type Parent = String
 
 newtype Age = Age Int
 
@@ -58,3 +62,10 @@ nameMaybeAgeDef = Definition $ Object $ Properties [ ageDef, nameDef ]
   where
     nameDef = Property true "name" (String None)
     ageDef = Property false "age" Int
+
+nameMaybeAgeParents :: Definition User
+nameMaybeAgeParents = Definition $ Object $ Properties [ ageDef, nameDef, parentsDef ]
+  where
+    nameDef = Property true "name" (String None)
+    ageDef = Property false "age" Int
+    parentsDef = Property true "parents" (Array $ String None)

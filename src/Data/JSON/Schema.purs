@@ -158,7 +158,29 @@ instance recordWriteForeign ::
 class WriteDefinitionFields (xs :: RowList) where
   toArray :: RLProxy xs -> Array Property
 
-instance writeDefinitionFieldsCons ::
+instance writeDefinitionFieldsMaybeCons ::
+  ( IsSymbol name
+  , WriteDefinition head
+  , WriteDefinitionFields tail
+  , Row.Cons name (Maybe head) whatever row
+  ) => WriteDefinitionFields (Cons name (Maybe head) tail) where
+  toArray _ = [Property false (reflectSymbol nameP) $ unDef (definition :: Definition head)] <> toArray rest
+    where
+      nameP = SProxy :: SProxy name
+      rest = RLProxy :: RLProxy tail
+
+else instance writeDefinitionFieldsArrayCons ::
+  ( IsSymbol name
+  , WriteDefinition head
+  , WriteDefinitionFields tail
+  , Row.Cons name (Array head) whatever row
+  ) => WriteDefinitionFields (Cons name (Array head) tail) where
+  toArray _ = [Property true (reflectSymbol nameP) $ Array $ unDef (definition :: Definition head)] <> toArray rest
+    where
+      nameP = SProxy :: SProxy name
+      rest = RLProxy :: RLProxy tail
+
+else instance writeDefinitionFieldsCons ::
   ( IsSymbol name
   , WriteDefinition head
   , WriteDefinitionFields tail
@@ -169,16 +191,6 @@ instance writeDefinitionFieldsCons ::
       nameP = SProxy :: SProxy name
       rest = RLProxy :: RLProxy tail
 
-else instance writeDefinitionFieldsCons2 ::
-  ( IsSymbol name
-  , WriteDefinition head
-  , WriteDefinitionFields tail
-  , Row.Cons name (Maybe head) whatever row
-  ) => WriteDefinitionFields (Cons name (Maybe head) tail) where
-  toArray _ = [Property false (reflectSymbol nameP) $ unDef (definition :: Definition head)] <> toArray rest
-    where
-      nameP = SProxy :: SProxy name
-      rest = RLProxy :: RLProxy tail
 
 instance writeDefinitionFieldsNil :: WriteDefinitionFields Nil where
   toArray _ = []
