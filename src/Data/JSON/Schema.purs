@@ -1,47 +1,17 @@
 module Data.JSON.Schema
-  ( Definition(..)
-  , Schema(..)
+  ( Schema(..)
   , Object(..)
   , Property(..)
   , StringFormat(..)
-  , Reference
   , Required
   , Name
-
-  , class WriteDefinition
-  , definition
-
-  , jsonDefinition
-
-  , class WriteDefinitionFields
-  , toArray
   ) where
 
 import Prelude
-
-import Foreign (Foreign)
-import Foreign.Object as FO
-import Data.Tuple (Tuple(..))
-import Data.Symbol (class IsSymbol, SProxy(..), reflectSymbol)
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
-import Data.Maybe (Maybe(..))
-import Simple.JSON (write, writeJSON)
-import Prim.Row as Row
-import Prim.RowList (class RowToList, Cons, Nil, kind RowList)
-import Type.Prelude (RLProxy(..))
-
-
--- | A JSON Schema definition according to OpenAPI 3.0.3
-newtype Definition a = Definition Schema
-
-instance showDefinition :: Show (Definition a) where
-  show (Definition s) = "(Definition " <> show s <> ")"
-
-derive newtype instance eqDefinition :: Eq (Definition a)
-
-undef :: forall a. Definition a -> Schema
-undef (Definition s) = s
+import Data.Foldable (elem, all)
+import Data.Array (length)
 
 -- | The different schema definitions, strings, arrays, objects and so on
 data Schema
@@ -51,7 +21,7 @@ data Schema
   | Boolean
   | Int
   | Array Schema
-  | Reference Reference
+  | Reference String
 
 instance showSchema :: Show Schema where
   show (Object obj) = "(Object " <> show obj <> ")"
@@ -86,7 +56,11 @@ derive instance genericObject :: Generic Object _
 
 instance showObject :: Show Object where
   show = genericShow
-derive instance eqObject :: Eq Object
+
+instance eqObject :: Eq Object where
+  eq (Properties xs1) (Properties xs2) =
+    length xs1 == length xs2 &&
+    all (flip elem $ xs1) xs2
 
 data Property = Property Required Name Schema
 
@@ -94,97 +68,9 @@ derive instance genericProperty :: Generic Property _
 
 instance showProperty :: Show Property where
   show = genericShow
-derive instance eqProperty :: Eq Property
 
-type Reference = String
+derive instance eqProperty :: Eq Property
 
 type Required = Boolean
 
 type Name = String
-
-class WriteDefinition a where
-  definition :: Definition a
-
--- | Write a `Definition a` to a JSON string
-jsonDefinition :: forall a. Definition a -> String
-jsonDefinition = writeJSON <<< writeDefinition
-
-writeDefinition :: forall a. Definition a -> Foreign
-writeDefinition (Definition s) = writeSchema s
-
-writeSchema :: Schema -> Foreign
-writeSchema Int = write { "type": "integer" }
-writeSchema Number = write { "type": "number" }
-writeSchema Boolean = write { "type": "boolean" }
-writeSchema (Array s) = write { "type": "array", "items": writeSchema s }
-writeSchema (Reference r) = write { "$ref": r }
-writeSchema (String f) = write { "type": "string", format: format f }
-  where
-    format None = Nothing
-    format Date = Just "date"
-    format DateTime = Just "date-time"
-    format Password = Just "password"
-    format Byte = Just "byte"
-    format Binary = Just "binary"
-writeSchema (Object (Properties ps)) =
-  write { "type": "object"
-        , required: ps >>= required
-        , properties: FO.fromFoldable $ writePropTuple <$> ps
-        }
-  where
-    required (Property true n _) = [n]
-    required _ = []
-
-writePropTuple :: Property -> Tuple String Foreign
-writePropTuple (Property _ n s) = Tuple n $ writeSchema s
-
-instance stringWriteDefinition :: WriteDefinition String where
-  definition = Definition (String None)
-
-instance intWriteDefinition :: WriteDefinition Int where
-  definition = Definition Int
-
-instance numberWriteDefinition :: WriteDefinition Number where
-  definition = Definition Number
-
-instance arrayWriteDefinition :: WriteDefinition a => WriteDefinition (Array a) where
-  definition = Definition $ Array schemaA
-    where
-      schemaA = undef $ definition :: Definition a
-
-instance recordWriteForeign ::
-  ( RowToList fields fieldList
-  , WriteDefinitionFields fieldList
-  ) => WriteDefinition (Record fields) where
-  definition = Definition $ Object $ Properties $ toArray fieldListP
-    where
-      fieldListP = RLProxy :: RLProxy fieldList
-
-class WriteDefinitionFields (xs :: RowList) where
-  toArray :: RLProxy xs -> Array Property
-
-instance writeDefinitionFieldsMaybeCons ::
-  ( IsSymbol name
-  , WriteDefinition head
-  , WriteDefinitionFields tail
-  , Row.Cons name (Maybe head) whatever row
-  ) => WriteDefinitionFields (Cons name (Maybe head) tail) where
-  toArray _ = [Property false (reflectSymbol nameP) $ undef (definition :: Definition head)] <> toArray rest
-    where
-      nameP = SProxy :: SProxy name
-      rest = RLProxy :: RLProxy tail
-
-else instance writeDefinitionFieldsCons ::
-  ( IsSymbol name
-  , WriteDefinition head
-  , WriteDefinitionFields tail
-  , Row.Cons name head whatever row
-  ) => WriteDefinitionFields (Cons name head tail) where
-  toArray _ = [Property true (reflectSymbol nameP) $ undef (definition :: Definition head)] <> toArray rest
-    where
-      nameP = SProxy :: SProxy name
-      rest = RLProxy :: RLProxy tail
-
-
-instance writeDefinitionFieldsNil :: WriteDefinitionFields Nil where
-  toArray _ = []
