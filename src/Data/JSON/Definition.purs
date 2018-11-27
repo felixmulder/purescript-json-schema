@@ -16,8 +16,8 @@ module Data.JSON.Definition
   , class RowToProperty
   , toPropertyArray
 
-  , jsonDefinition
-  , yamlDefinition
+  , showJson
+  , showYaml
   ) where
 
 import Prelude
@@ -90,12 +90,12 @@ else instance basicTypeOther :: IsType a where
   typeOf _ = RefType
 
 -- | Write a `Definition a` to a JSON string
-jsonDefinition :: forall a. Definition a -> String
-jsonDefinition = writeJSON <<< writeDefinition
+showJson :: forall a. Definition a -> String
+showJson = writeJSON <<< writeDefinition
 
 -- | Write a `Definition a` to a YAML string
-yamlDefinition :: forall a. Definition a -> String
-yamlDefinition = writeYaml <<< writeDefinition
+showYaml :: forall a. Definition a -> String
+showYaml = writeYaml <<< writeDefinition
 
 foreign import writeYaml :: Foreign -> String
 
