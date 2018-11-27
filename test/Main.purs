@@ -22,11 +22,11 @@ import Data.JSON.Definition (class JsonSchema, Definition(..), Reference, record
 -- |     name:
 -- |       type: string
 -- |     age:
--- |       type: number
+-- |       type: integer
 -- |     parents:
 -- |       type: array
 -- |       items:
--- |         '$ref': '#/definitions/Parents'
+-- |         '$ref': '#/definitions/Parent'
 -- | ```
 main :: Effect Unit
 main = run [consoleReporter] do
@@ -98,7 +98,7 @@ newtype UserName = UserName String
 
 instance jsonSchemaUserName :: JsonSchema UserName where
   schemaPath = wrap "#/definitions/UserName"
-  definition = wrap $ unwrap $ definition :: Definition String
+  definition = Definition $ String None
 
 newtype Parent = Parent UserName
 
