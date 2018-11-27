@@ -99,7 +99,9 @@ writeSchema Number = write { "type": "number" }
 writeSchema Boolean = write { "type": "boolean" }
 writeSchema (Array s) = write { "type": "array", "items": writeSchema s }
 writeSchema (Reference r) = write { "$ref": r }
-writeSchema (String f) = write { "type": "string", format: format f }
+writeSchema (String fmt) = case format fmt of
+  Just f -> write { "type": "string", format: f }
+  Nothing -> write { "type": "string" }
   where
     format None = Nothing
     format Date = Just "date"
