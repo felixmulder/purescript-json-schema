@@ -70,6 +70,14 @@ instance jsonSchemaInt :: JsonSchema Int where
   definition = Definition Int
   schemaPath = Ref "<INVALID>"
 
+instance jsonSchemaNumber :: JsonSchema Number where
+  definition = Definition Number
+  schemaPath = Ref "<INVALID>"
+
+instance jsonSchemaBoolean :: JsonSchema Boolean where
+  definition = Definition Boolean
+  schemaPath = Ref "<INVALID>"
+
 instance jsonSchemaArray :: JsonSchema a => JsonSchema (Array a) where
   definition = Definition $ Array $ unwrap (definition :: Definition a)
   schemaPath = Ref $ unwrap (schemaPath :: Reference a)
