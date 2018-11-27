@@ -49,6 +49,10 @@ instance parentSchema :: JsonSchema Parent where
 recordJsonSchema :: Definition { name :: String, age :: Maybe Int, parents :: Array Parent }
 ```
 
+Printing definition
+-------------------
+You can print to two string formats - JSON and YAML. In order to print to YAML,
+you need to install `js-yaml` with `npm` or similar.
 
 Roadmap
 =======

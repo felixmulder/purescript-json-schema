@@ -1,2 +1,4 @@
 .psc-package/
+.psci_modules/
 output/
+node_modules/

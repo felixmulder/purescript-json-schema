@@ -7,6 +7,7 @@
     "effect",
     "foreign-object",
     "prelude",
+    "psci-support",
     "simple-json",
     "spec"
   ]
