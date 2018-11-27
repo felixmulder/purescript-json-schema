@@ -8,13 +8,13 @@ Usage
 ```purescript
 type User =
   { name :: String
-  , age :: Int
+  , age :: Maybe Int
   }
 
-jsonSchema (definition :: Definition User)
+recordJsonSchema :: Definition User
 -- {
 --   "type":"object",
---   "required":["age","name"],
+--   "required":["name"],
 --   "properties":{"age":{"type":"integer"},"name":{"type":"string"}}
 -- }
 ```
