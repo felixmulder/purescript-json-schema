@@ -23,7 +23,6 @@ module Data.JSON.Definition
 import Prelude
 
 import Data.Maybe (Maybe(..))
-import Data.Either (Either(..), either)
 import Data.Newtype (class Newtype, unwrap)
 import Data.Tuple (Tuple(..))
 import Data.Symbol (class IsSymbol, SProxy(..), reflectSymbol)
