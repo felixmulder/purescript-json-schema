@@ -7,7 +7,7 @@ import Test.Spec (describe, it)
 import Test.Spec.Assertions (shouldEqual)
 import Test.Spec.Reporter.Console (consoleReporter)
 import Test.Spec.Runner (run)
-import Data.Maybe (Maybe)
+import Data.Maybe (Maybe(..))
 import Data.Newtype (unwrap, wrap)
 import Data.JSON.Schema (Object(..), Property(..), Schema(..), StringFormat(..))
 import Data.JSON.Definition (class JsonSchema, Definition(..), Reference, recordJsonSchema, definition, schemaPath)
@@ -99,9 +99,11 @@ newtype UserName = UserName String
 instance jsonSchemaUserName :: JsonSchema UserName where
   schemaPath = wrap "#/definitions/UserName"
   definition = Definition $ String None
+  description = Nothing
 
 newtype Parent = Parent UserName
 
 instance jsonSchemaParent :: JsonSchema Parent where
   schemaPath = wrap "#/definitions/Parent"
   definition = wrap $ Reference $ unwrap (schemaPath :: Reference UserName)
+  description = Nothing

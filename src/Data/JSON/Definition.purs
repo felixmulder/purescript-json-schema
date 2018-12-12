@@ -1,9 +1,11 @@
 module Data.JSON.Definition
   ( Definition(..)
   , Reference(..)
+  , Description(..)
 
   , class JsonSchema
   , definition
+  , description
   , schemaPath
 
   , class RecordDefinition
@@ -48,8 +50,13 @@ newtype Reference a = Ref String
 
 derive instance newtypeReference :: Newtype (Reference a) _
 
+newtype Description a = Description String
+
+derive instance newtypeDescription :: Newtype (Description a) _
+
 class JsonSchema a where
   definition :: Definition a
+  description :: Maybe (Description a)
   schemaPath :: Reference a
 
 class RecordDefinition a where
@@ -64,22 +71,27 @@ derive instance eqTypeOf :: Eq TypeOf
 
 instance jsonSchemaString :: JsonSchema String where
   definition = Definition (String None)
+  description = Nothing
   schemaPath = Ref "<INVALID>"
 
 instance jsonSchemaInt :: JsonSchema Int where
   definition = Definition Int
+  description = Nothing
   schemaPath = Ref "<INVALID>"
 
 instance jsonSchemaNumber :: JsonSchema Number where
   definition = Definition Number
+  description = Nothing
   schemaPath = Ref "<INVALID>"
 
 instance jsonSchemaBoolean :: JsonSchema Boolean where
   definition = Definition Boolean
+  description = Nothing
   schemaPath = Ref "<INVALID>"
 
 instance jsonSchemaArray :: JsonSchema a => JsonSchema (Array a) where
   definition = Definition $ Array $ unwrap (definition :: Definition a)
+  description = Nothing
   schemaPath = Ref $ unwrap (schemaPath :: Reference a)
 
 instance basicTypeString :: IsType String where
@@ -98,16 +110,16 @@ else instance basicTypeOther :: IsType a where
   typeOf _ = RefType
 
 -- | Write a `Definition a` to a JSON string
-showJson :: forall a. Definition a -> String
+showJson :: ∀ a. Definition a -> String
 showJson = writeJSON <<< writeDefinition
 
 -- | Write a `Definition a` to a YAML string
-showYaml :: forall a. Definition a -> String
+showYaml :: ∀ a. Definition a -> String
 showYaml = writeYaml <<< writeDefinition
 
 foreign import writeYaml :: Foreign -> String
 
-writeDefinition :: forall a. Definition a -> Foreign
+writeDefinition :: ∀ a. Definition a -> Foreign
 writeDefinition (Definition s) = writeSchema s
 
 writeSchema :: Schema -> Foreign
