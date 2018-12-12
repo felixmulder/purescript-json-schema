@@ -22,6 +22,7 @@ module Data.JSON.Definition
 
 import Prelude
 
+import Data.Foldable (any)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype, unwrap)
 import Data.Tuple (Tuple(..))
@@ -126,13 +127,13 @@ writeSchema (String fmt) = case format fmt of
     format Byte = Just "byte"
     format Binary = Just "binary"
 writeSchema (Object (Properties ps)) =
-  write { "type": "object"
-        , required: ps >>= required
-        , properties: FO.fromFoldable $ writePropTuple <$> ps
-        }
+  if any (\(Property r _ _) -> r) ps
+    then write { "type": "object", required: ps >>= required, properties: props }
+    else write { "type": "object", properties: props }
   where
     required (Property true n _) = [n]
     required _ = []
+    props = FO.fromFoldable $ writePropTuple <$> ps
 
 writePropTuple :: Property -> Tuple String Foreign
 writePropTuple (Property _ n s) = Tuple n $ writeSchema s
