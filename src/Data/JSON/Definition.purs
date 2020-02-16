@@ -31,7 +31,7 @@ import Data.Tuple (Tuple(..))
 import Data.Symbol (class IsSymbol, SProxy(..), reflectSymbol)
 import Foreign (Foreign)
 import Foreign.Object as FO
-import Prim.RowList (class RowToList, Cons, Nil, RowList)
+import Prim.RowList (class RowToList, Cons, Nil, kind RowList)
 import Prim.Row as Row
 import Simple.JSON (write, writeJSON)
 import Type.Prelude (RLProxy(..))
@@ -158,7 +158,7 @@ instance recordUnamedSchema ::
     where
       fieldListP = RLProxy :: RLProxy fieldList
 
-class RowToProperty (xs :: RowList Type) where
+class RowToProperty (xs :: RowList) where
   toPropertyArray :: RLProxy xs -> Array Property
 
 instance writeDefinitionFieldsMaybeCons ::
